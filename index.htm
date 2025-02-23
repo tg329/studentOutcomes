@@ -22,12 +22,12 @@
 
         
         <svg
-            id='unemployment' height="200" width="400" style="background: rgb(195, 195, 195); margin-top:5px; margin-left: 50px;" 
+            id='unemployment' height="250" width="700" style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;" 
             >
         </svg>
 
         <p>
-            Recent graduates have a lower employment rate, but do these graduates require their degree for their work?
+            Recent graduates have a higher employment rate, but do these graduates require their degree for their work?
 
         </p>
 
@@ -42,7 +42,7 @@
             const plot = d3.select('#unemployment')
             const width = plot.attr('width')
             const height = plot.attr('height')
-            const margin = { top: 5, right: 5, bottom: 35, left:35};
+            const margin = { top: 50, right: 35, bottom: 35, left:35};
             const chartWidth = width - margin.left - margin.right;
             const chartHeight = height - margin.top - margin.bottom;
             const yAxisArea = plot.append("g")
@@ -94,7 +94,7 @@
                 // Y Axis (Rate of Unemployment)
                 const rateScale = d3.scaleLinear()
                     .domain(rateExtent)
-                    .range([chartHeight, 0])
+                    .range([0, chartHeight])
 
                 let leftAxis = d3.axisLeft(rateScale)
             
@@ -103,13 +103,6 @@
                     .call(leftAxis)
 
                 // plot lines
-
-                // chartArea.selectAll("circles.yw").data(unemployed)
-                //     .join('circle')
-                //     .attr('cx', d => dateScale(parseTime(d['Date'])))
-                //     .attr('cy', d => rateScale(d['Young workers']))
-                //     .attr('fill', 'red')
-                //     .attr('r', 1)
 
                 // young workers (22-27 no degree)
                 chartArea.selectAll("path.yw")
@@ -147,9 +140,10 @@
 
                 // mouse-over ------------
 
-                let verticalLine = chartArea.selectAll('.hover')
-                        .data(unemployed).enter().append("line")
+                // .selectAll('.hover').data(unemployed).enter()
+                let verticalLine = chartArea.append("line")
                         .attr('stroke-width', 1)
+                        .attr('opacity', 0.5)
                         .attr('stroke', 'white')
                         .attr('fill', 'none')
                         .attr('x1', chartWidth)
@@ -157,28 +151,34 @@
                         .attr('x2', chartWidth)
                         .attr('y2', chartHeight)
 
-                let circleYW = chartArea.append('circle')
+                function createScrubCircle(){
+                    return chartArea.append('circle')
                         .attr('cx', 0)
                         .attr('cy', 0)
                         .attr('r', 3)
+                        .attr('opacity', 0.5)
                         .attr('fill', 'none')
+                }
 
-                let circleAW = chartArea.append('circle')
-                        .attr('cx', 0)
-                        .attr('cy', 0)
-                        .attr('r', 3)
-                        .attr('fill', 'none')
+                let circleYW = createScrubCircle();
+                let circleAW = createScrubCircle();
+                let circleRG = createScrubCircle();
 
-                let circleRG = chartArea.append('circle')
-                        .attr('cx', 0)
-                        .attr('cy', 0)
-                        .attr('r', 3)
-                        .attr('fill', 'none')
+                let text = chartArea.append('text')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('dy', -10)
+                    .attr('text-anchor','middle')
+                    .attr('fill', 'white')
+                    .text('')
 
+
+
+                // check if mouse movement is in the area of the window via the overlay. 
                 let overlay = chartArea.append("rect")
                     .attr("class", "overlay")
-                    .attr("width", chartWidth)
-                    .attr("height", chartHeight)
+                    .attr("width", chartWidth + 10)
+                    .attr("height", chartHeight + 10 )
                     .style("fill","white")
                     .style('opacity', 0 )
                     .on("mouseover", mousemove)
@@ -217,6 +217,10 @@
                         .attr('cy', rateScale(element["Recent graduates"]))
                         .attr('fill', 'green')
 
+                    text
+                        .attr('x', coordinates[0])
+                        .text((d3.timeFormat('%b-%Y'))(timestamp))
+
 
 
                 }
@@ -237,6 +241,8 @@
 
                     circleRG
                         .attr('fill', 'none')
+
+                    text.text('')
                 }
 
             }
