@@ -292,12 +292,12 @@
             const majorData = await d3.csv('datasets/majorOutcomes.csv', d3.autotype);
 
             const rateScale = d3.scaleLinear()
-                .domain([0, 100]) 
+                .domain([0, 100])
                 .range([0, chartWidth2]);
 
             const majorScale = d3.scaleBand()
                 .range([0, chartHeight2])
-                .padding(0.1); 
+                .padding(0.1);
 
             xAxisArea2.append('g')
                 .call(d3.axisBottom(rateScale));
@@ -322,19 +322,18 @@
             const buttonContainer = d3.select("#buttons");
 
             buttonContainer.selectAll("button")
-                .data(Object.keys(majorCategories)) 
+                .data(Object.keys(majorCategories))
                 .enter()
                 .append("button")
-                .text(d => d) 
+                .text(d => d)
                 .on("click", function (event, category) {
-                    updateChart(category); 
+                    updateChart(category);
                 });
 
             function updateChart(selectedCategory) {
-              
+
                 let filtered = majorData.filter(d => majorCategories[selectedCategory].includes(d["Major"]));
 
-   
                 majorScale.domain(filtered.map(d => d["Major"]));
 
 
@@ -344,12 +343,8 @@
 
                 chartArea2.selectAll('line').remove();
 
-                let lines = chartArea2.selectAll('line')
-                    .data(filtered);
-
-                lines.enter()
-                    .append('line')
-                    .merge(lines) 
+                const lines = chartArea2.selectAll('line').data(filtered)
+                    .join('line')
                     .transition().duration(300)
                     .attr("stroke-width", 2)
                     .attr("stroke", "#a63d40")
@@ -358,25 +353,21 @@
                     .attr('x2', d => rateScale(d['Underemployment Rate']))
                     .attr('y2', d => majorScale(d['Major']) + majorScale.bandwidth() / 2);
 
-
                 function updateCircles(className, dataKey, color) {
 
-                    chartArea2.selectAll(`circle.${className}`).remove();
-
-                    let circles = chartArea2.selectAll(`circle.${className}`).data(filtered);
-
-                    //circles.selectAll("circle").remove(); 
-
-                    circles.enter()
-                        .append("circle")
-                        .merge(circles) 
+                    const circles = chartArea2.selectAll(`circle.${className}`).data(filtered)
+                        .join("circle")
                         .transition().duration(300)
                         .attr("class", className)
                         .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
                         .attr("cx", d => rateScale(d[dataKey]))
                         .attr("r", 3)
                         .attr("fill", color);
+
+                    //circles.selectAll("circle").remove(); 
+
                 }
+
 
                 updateCircles("unemp", "Unemployment Rate", "red");
                 updateCircles("undemp", "Underemployment Rate", "blue");
