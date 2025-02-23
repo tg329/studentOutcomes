@@ -11,7 +11,7 @@
     
     <body>
 
-        <!-- Header -->
+        <!-- Page Layout -->
         <h1>
             How much is your major really worth?
         </h1>
@@ -26,15 +26,13 @@
             >
         </svg>
 
-    <p>
-        Recent graduates have a lower employment rate, but do these graduates require their degree for their work?
+        <p>
+            Recent graduates have a lower employment rate, but do these graduates require their degree for their work?
 
-    </p>
-
-
+        </p>
 
         <svg
-            id='majors' height="800" width="500" style="background: rgb(195, 195, 195); margin-top:5px; margin-left: 50px;" 
+            id='majors' height="800" width="600" style="background: rgb(195, 195, 195); margin-top:5px; margin-left: 50px;" 
             >
         </svg>
         
@@ -51,7 +49,9 @@
                                 .attr("transform","translate("+(margin.left-2)+","+margin.top+")");
             const xAxisArea = plot.append("g")
                                 .attr("transform","translate("+margin.left+","+(chartHeight+2+margin.top)+")");
-            const chartArea = plot.append("g").attr("transform","translate("+margin.left+","+margin.top+")");
+            const chartArea = plot.append("g")
+                .attr("transform","translate("+margin.left+","+margin.top+")");
+
 
 
             const requestMarketData = async function() {
@@ -144,6 +144,101 @@
                             .x(d => dateScale(parseTime(d['Date'])))
                             .y(d => rateScale(d['Recent graduates'])))
 
+
+                // mouse-over ------------
+
+                let verticalLine = chartArea.selectAll('.hover')
+                        .data(unemployed).enter().append("line")
+                        .attr('stroke-width', 1)
+                        .attr('stroke', 'white')
+                        .attr('fill', 'none')
+                        .attr('x1', chartWidth)
+                        .attr('y1', 0)
+                        .attr('x2', chartWidth)
+                        .attr('y2', chartHeight)
+
+                let circleYW = chartArea.append('circle')
+                        .attr('cx', 0)
+                        .attr('cy', 0)
+                        .attr('r', 3)
+                        .attr('fill', 'none')
+
+                let circleAW = chartArea.append('circle')
+                        .attr('cx', 0)
+                        .attr('cy', 0)
+                        .attr('r', 3)
+                        .attr('fill', 'none')
+
+                let circleRG = chartArea.append('circle')
+                        .attr('cx', 0)
+                        .attr('cy', 0)
+                        .attr('r', 3)
+                        .attr('fill', 'none')
+
+                let overlay = chartArea.append("rect")
+                    .attr("class", "overlay")
+                    .attr("width", chartWidth)
+                    .attr("height", chartHeight)
+                    .style("fill","white")
+                    .style('opacity', 0 )
+                    .on("mouseover", mousemove)
+                    .on("mouseout",  mouseout)
+                    .on("mousemove", mousemove);
+
+                
+                function mousemove () {
+                    var coordinates= d3.pointer(event, this);
+                    // console.log(coordinates)
+
+                    verticalLine.attr('x1', coordinates[0])
+                        .attr('y1', 0)
+                        .attr('x2', coordinates[0])
+                        .attr('y2', chartHeight)
+                        .attr('stroke', 'white')
+
+                    // snap to the nearest time coordinate
+                    let timestamp = new Date(dateScale.invert(coordinates[0]))
+                    let element = unemployed[d3.bisect(dates, timestamp)]
+
+                    console.log(element)
+
+                    circleYW
+                        .attr('cx', dateScale(parseTime(element['Date'])))
+                        .attr('cy', rateScale(element["Young workers"]))
+                        .attr('fill', 'red')
+
+                    circleAW
+                        .attr('cx', dateScale(parseTime(element['Date'])))
+                        .attr('cy', rateScale(element["All workers"]))
+                        .attr('fill', 'blue')
+
+                    circleRG
+                        .attr('cx', dateScale(parseTime(element['Date'])))
+                        .attr('cy', rateScale(element["Recent graduates"]))
+                        .attr('fill', 'green')
+
+
+
+                }
+         
+                
+                // make line invisible
+                function mouseout() {
+                    var coordinates= d3.pointer(event, this);
+                    // console.log(coordinates)
+
+                    verticalLine.attr('stroke', 'none')
+
+                    circleYW
+                        .attr('fill', 'none')
+
+                    circleAW
+                        .attr('fill', 'none')
+
+                    circleRG
+                        .attr('fill', 'none')
+                }
+
             }
 
             requestMarketData();
@@ -153,13 +248,13 @@
             const plot2 = d3.select('#majors')
             const width2 = plot2.attr('width')
             const height2 = plot2.attr('height')
-            const margin2 = { top: 5, right: 5, bottom: 35, left:200};
+            const margin2 = { top: 10, right: 10, bottom: 35, left:200};
             const chartWidth2 = width2 - margin2.left - margin2.right;
             const chartHeight2 = height2 - margin2.top - margin2.bottom;
             const yAxisArea2 = plot2.append("g")
                                 .attr("transform","translate("+(margin2.left-2)+","+margin2.top+")");
             const xAxisArea2 = plot2.append("g")
-                                .attr("transform","translate("+margin2.left+","+(chartHeight2+2+margin2.top)+")");
+                                .attr("transform","translate("+margin2.left+","+(chartHeight2+6+margin2.top)+")");
             const chartArea2 = plot2.append("g").attr("transform","translate("+margin2.left+","+margin2.top+")");
 
             const requestMajorData = async function() {
@@ -190,7 +285,9 @@
                 const majorScale = d3.scaleBand()
                     .domain(majors)
                     .range([0, chartHeight2])
-                    //.range([chartHeight2, 0])
+                    .paddingInner(1) 
+                // Setting the padding between values equal to 1 fixes the alignment issue  
+                // I cannot begin to describe as to why. 
 
                 let leftAxis = d3.axisLeft(majorScale)
                     
@@ -214,27 +311,21 @@
                     .attr("stroke-width", 2)
                     .attr("stroke", "#a63d40")
                     .attr('x1', rateScale(0))
-                    .attr('y1',  d => majorScale(d['Major']) )
+                    .attr('y1',  d => majorScale(d['Major']))
                     .attr('x2', d=> rateScale(d['Underemployment Rate']))
                     .attr('y2',  d => majorScale(d['Major']) )
 
                 chartArea2.selectAll('circles.unemp')
-                .data(major).join('circle')
-                .attr('cy', d => majorScale(d['Major']) )
-                .attr('cx', d=> rateScale(d['Unemployment Rate']))
-                .attr('r', 2)
+                    .data(major).join('circle')
+                    .attr('cy', d => majorScale(d['Major']) )
+                    .attr('cx', d=> rateScale(d['Unemployment Rate']))
+                    .attr('r', 2)
 
                 chartArea2.selectAll('circles.undemp')
-                .data(major).join('circle')
-                .attr('cy', d => majorScale(d['Major']) )
-                .attr('cx', d=> rateScale(d['Underemployment Rate']))
-                .attr('r', 2)
-
-               
-                    
-
-
-
+                    .data(major).join('circle')
+                    .attr('cy', d => majorScale(d['Major']) )
+                    .attr('cx', d=> rateScale(d['Underemployment Rate']))
+                    .attr('r', 2)
 
 
             }
