@@ -359,7 +359,7 @@
                     .attr('y2', d => majorScale(d['Major']) + majorScale.bandwidth() / 2);
 
 
-                function updateCircles(className, dataKey) {
+                function updateCircles(className, dataKey, color) {
 
                     chartArea2.selectAll(`circle.${className}`).remove();
 
@@ -374,11 +374,12 @@
                         .attr("class", className)
                         .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
                         .attr("cx", d => rateScale(d[dataKey]))
-                        .attr("r", 3);
+                        .attr("r", 3)
+                        .attr("fill", color);
                 }
 
-                updateCircles("unemp", "Unemployment Rate");
-                updateCircles("undemp", "Underemployment Rate");
+                updateCircles("unemp", "Unemployment Rate", "red");
+                updateCircles("undemp", "Underemployment Rate", "blue");
             }
 
             updateChart("All");
