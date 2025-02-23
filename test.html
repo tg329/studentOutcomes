@@ -342,10 +342,10 @@
                     .duration(300)
                     .call(d3.axisLeft(majorScale));
 
+                chartArea2.selectAll('line').remove();
+
                 let lines = chartArea2.selectAll('line')
                     .data(filtered);
-
-                lines.selectAll('line').remove(); 
 
                 lines.enter()
                     .append('line')
@@ -360,9 +360,12 @@
 
 
                 function updateCircles(className, dataKey) {
+
+                    chartArea2.selectAll(`circle.${className}`).remove();
+
                     let circles = chartArea2.selectAll(`circle.${className}`).data(filtered);
 
-                    circles.selectAll("circle").remove(); 
+                    //circles.selectAll("circle").remove(); 
 
                     circles.enter()
                         .append("circle")
