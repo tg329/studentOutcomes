@@ -46,36 +46,38 @@
             Federal Reserve</a>.
     </p>
 
+        
+        <svg
+            id='unemployment' height="250" width="700" style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;" 
+            >
+        </svg>
 
-    <svg id='unemployment' height="200" width="400"
-        style="background: rgb(195, 195, 195); margin-top:5px; margin-left: 50px;">
-    </svg>
+        <p>
+            Recent graduates have a higher employment rate, but do these graduates require their degree for their work?
 
-    <p>
-        Recent graduates have a lower employment rate, but do these graduates require their degree for their work?
+        </p>
 
-    </p>
+        <svg
+            id='majors' height="800" width="600" style="background: rgb(195, 195, 195); margin-top:5px; margin-left: 50px;" 
+            >
+        </svg>
+        
 
+        <!-- Scripts -->
+        <script>
+            const plot = d3.select('#unemployment')
+            const width = plot.attr('width')
+            const height = plot.attr('height')
+            const margin = { top: 50, right: 35, bottom: 35, left:35};
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+            const yAxisArea = plot.append("g")
+                                .attr("transform","translate("+(margin.left-2)+","+margin.top+")");
+            const xAxisArea = plot.append("g")
+                                .attr("transform","translate("+margin.left+","+(chartHeight+2+margin.top)+")");
+            const chartArea = plot.append("g")
+                .attr("transform","translate("+margin.left+","+margin.top+")");
 
-
-    <svg id='majors' height="800" width="500"
-        style="background: rgb(195, 195, 195); margin-top:5px; margin-left: 50px;">
-    </svg>
-
-
-    <!-- Scripts -->
-    <script>
-        const plot = d3.select('#unemployment')
-        const width = plot.attr('width')
-        const height = plot.attr('height')
-        const margin = { top: 20, right: 20, bottom: 35, left: 35 };
-        const chartWidth = width - margin.left - margin.right;
-        const chartHeight = height - margin.top - margin.bottom;
-        const yAxisArea = plot.append("g")
-            .attr("transform", "translate(" + (margin.left - 2) + "," + margin.top + ")");
-        const xAxisArea = plot.append("g")
-            .attr("transform", "translate(" + margin.left + "," + (chartHeight + 2 + margin.top) + ")");
-        const chartArea = plot.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
         const requestMarketData = async function () {
@@ -115,10 +117,10 @@
                 .attr('class', 'x axis')
                 .call(bottomAxis)
 
-            // Y Axis (Rate of Unemployment)
-            const rateScale = d3.scaleLinear()
-                .domain(rateExtent)
-                .range([chartHeight, 0])
+                // Y Axis (Rate of Unemployment)
+                const rateScale = d3.scaleLinear()
+                    .domain(rateExtent)
+                    .range([0, chartHeight])
 
             let leftAxis = d3.axisLeft(rateScale)
 
@@ -126,14 +128,7 @@
                 .attr('class', 'y axis')
                 .call(leftAxis)
 
-            // plot lines
-
-            // chartArea.selectAll("circles.yw").data(unemployed)
-            //     .join('circle')
-            //     .attr('cx', d => dateScale(parseTime(d['Date'])))
-            //     .attr('cy', d => rateScale(d['Young workers']))
-            //     .attr('fill', 'red')
-            //     .attr('r', 1)
+                // plot lines
 
             // young workers (22-27 no degree)
             chartArea.selectAll("path.yw")
@@ -168,23 +163,131 @@
                     .x(d => dateScale(parseTime(d['Date'])))
                     .y(d => rateScale(d['Recent graduates'])))
 
-        }
+
+                // mouse-over ------------
+
+                // .selectAll('.hover').data(unemployed).enter()
+                let verticalLine = chartArea.append("line")
+                        .attr('stroke-width', 1)
+                        .attr('opacity', 0.5)
+                        .attr('stroke', 'white')
+                        .attr('fill', 'none')
+                        .attr('x1', chartWidth)
+                        .attr('y1', 0)
+                        .attr('x2', chartWidth)
+                        .attr('y2', chartHeight)
+
+                function createScrubCircle(){
+                    return chartArea.append('circle')
+                        .attr('cx', 0)
+                        .attr('cy', 0)
+                        .attr('r', 3)
+                        .attr('opacity', 0.5)
+                        .attr('fill', 'none')
+                }
+
+                let circleYW = createScrubCircle();
+                let circleAW = createScrubCircle();
+                let circleRG = createScrubCircle();
+
+                let text = chartArea.append('text')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('dy', -10)
+                    .attr('text-anchor','middle')
+                    .attr('fill', 'white')
+                    .text('')
+
+
+
+                // check if mouse movement is in the area of the window via the overlay. 
+                let overlay = chartArea.append("rect")
+                    .attr("class", "overlay")
+                    .attr("width", chartWidth + 10)
+                    .attr("height", chartHeight + 10 )
+                    .style("fill","white")
+                    .style('opacity', 0 )
+                    .on("mouseover", mousemove)
+                    .on("mouseout",  mouseout)
+                    .on("mousemove", mousemove);
+
+                
+                function mousemove () {
+                    var coordinates= d3.pointer(event, this);
+                    // console.log(coordinates)
+
+                    verticalLine.attr('x1', coordinates[0])
+                        .attr('y1', 0)
+                        .attr('x2', coordinates[0])
+                        .attr('y2', chartHeight)
+                        .attr('stroke', 'white')
+
+                    // snap to the nearest time coordinate
+                    let timestamp = new Date(dateScale.invert(coordinates[0]))
+                    let element = unemployed[d3.bisect(dates, timestamp)]
+
+                    console.log(element)
+
+                    circleYW
+                        .attr('cx', dateScale(parseTime(element['Date'])))
+                        .attr('cy', rateScale(element["Young workers"]))
+                        .attr('fill', 'red')
+
+                    circleAW
+                        .attr('cx', dateScale(parseTime(element['Date'])))
+                        .attr('cy', rateScale(element["All workers"]))
+                        .attr('fill', 'blue')
+
+                    circleRG
+                        .attr('cx', dateScale(parseTime(element['Date'])))
+                        .attr('cy', rateScale(element["Recent graduates"]))
+                        .attr('fill', 'green')
+
+                    text
+                        .attr('x', coordinates[0])
+                        .text((d3.timeFormat('%b-%Y'))(timestamp))
+
+
+
+                }
+         
+                
+                // make line invisible
+                function mouseout() {
+                    var coordinates= d3.pointer(event, this);
+                    // console.log(coordinates)
+
+                    verticalLine.attr('stroke', 'none')
+
+                    circleYW
+                        .attr('fill', 'none')
+
+                    circleAW
+                        .attr('fill', 'none')
+
+                    circleRG
+                        .attr('fill', 'none')
+
+                    text.text('')
+                }
+
+            }
 
         requestMarketData();
     </script>
 
-    <script>
-        const plot2 = d3.select('#majors')
-        const width2 = plot2.attr('width')
-        const height2 = plot2.attr('height')
-        const margin2 = { top: 20, right: 20, bottom: 35, left: 200 };
-        const chartWidth2 = width2 - margin2.left - margin2.right;
-        const chartHeight2 = height2 - margin2.top - margin2.bottom;
-        const yAxisArea2 = plot2.append("g")
-            .attr("transform", "translate(" + (margin2.left) + "," + (margin2.top - 5) + ")");
-        const xAxisArea2 = plot2.append("g")
-            .attr("transform", "translate(" + margin2.left + "," + (chartHeight2 + 2 + margin2.top) + ")");
-        const chartArea2 = plot2.append("g").attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+        <script>
+            const plot2 = d3.select('#majors')
+            const width2 = plot2.attr('width')
+            const height2 = plot2.attr('height')
+            const margin2 = { top: 10, right: 10, bottom: 35, left:200};
+            const chartWidth2 = width2 - margin2.left - margin2.right;
+            const chartHeight2 = height2 - margin2.top - margin2.bottom;
+            const yAxisArea2 = plot2.append("g")
+                                .attr("transform","translate("+(margin2.left-2)+","+margin2.top+")");
+            const xAxisArea2 = plot2.append("g")
+                                .attr("transform","translate("+margin2.left+","+(chartHeight2+6+margin2.top)+")");
+            const chartArea2 = plot2.append("g").attr("transform","translate("+margin2.left+","+margin2.top+")");
 
         const requestMajorData = async function () {
             const major = await d3.csv('datasets/majorOutcomes.csv', d3.autotype)
@@ -210,11 +313,13 @@
                 .attr('class', 'x axis')
                 .call(bottomAxis)
 
-            // Y axis (major)
-            const majorScale = d3.scaleBand()
-                .domain(majors)
-                .range([0, chartHeight2])
-            //.range([chartHeight2, 0])
+                // Y axis (major)
+                const majorScale = d3.scaleBand()
+                    .domain(majors)
+                    .range([0, chartHeight2])
+                    .paddingInner(1) 
+                // Setting the padding between values equal to 1 fixes the alignment issue  
+                // I cannot begin to describe as to why. 
 
             let leftAxis = d3.axisLeft(majorScale)
 
@@ -234,31 +339,25 @@
             chartArea2.selectAll('line')
                 .data(major)
                 .enter()
-                .append('line')
-                .attr("stroke-width", 2)
-                .attr("stroke", "#a63d40")
-                .attr('x1', rateScale(0))
-                .attr('y1', d => majorScale(d['Major']))
-                .attr('x2', d => rateScale(d['Underemployment Rate']))
-                .attr('y2', d => majorScale(d['Major']))
+                    .append('line')
+                    .attr("stroke-width", 2)
+                    .attr("stroke", "#a63d40")
+                    .attr('x1', rateScale(0))
+                    .attr('y1',  d => majorScale(d['Major']))
+                    .attr('x2', d=> rateScale(d['Underemployment Rate']))
+                    .attr('y2',  d => majorScale(d['Major']) )
 
-            chartArea2.selectAll('circles.unemp')
-                .data(major).join('circle')
-                .attr('cy', d => majorScale(d['Major']))
-                .attr('cx', d => rateScale(d['Unemployment Rate']))
-                .attr('r', 2)
+                chartArea2.selectAll('circles.unemp')
+                    .data(major).join('circle')
+                    .attr('cy', d => majorScale(d['Major']) )
+                    .attr('cx', d=> rateScale(d['Unemployment Rate']))
+                    .attr('r', 2)
 
-            chartArea2.selectAll('circles.undemp')
-                .data(major).join('circle')
-                .attr('cy', d => majorScale(d['Major']))
-                .attr('cx', d => rateScale(d['Underemployment Rate']))
-                .attr('r', 2)
-
-
-
-
-
-
+                chartArea2.selectAll('circles.undemp')
+                    .data(major).join('circle')
+                    .attr('cy', d => majorScale(d['Major']) )
+                    .attr('cx', d=> rateScale(d['Underemployment Rate']))
+                    .attr('r', 2)
 
 
         }
