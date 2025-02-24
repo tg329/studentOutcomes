@@ -31,6 +31,14 @@
             margin: 10px 0;
             border-radius: 1px;
         }
+
+        .gridlines line {
+            stroke: #bbb;
+        }
+
+        .gridlines .domain {
+            stroke: none;
+        }
     </style>
 </head>
 
@@ -425,8 +433,29 @@
                 .range([0, chartHeight2])
                 .padding(0.1);
 
-            xAxisArea2.append('g')
-                .call(d3.axisBottom(rateScale));
+            // x Axis
+
+            let xAxis = xAxisArea2.append('g')
+
+            xAxis.call(d3.axisBottom(rateScale));
+
+            let Gridlines = xAxisArea2.append('g')
+            .attr('class', 'x gridlines')
+
+            Gridlines.call(d3.axisBottom(rateScale)
+                .tickSize(-chartHeight2)
+                .tickFormat(""))
+
+            // X axis label
+
+            xlabel = xAxisArea2.append('text')
+                .attr('class', 'x label')
+                .attr('text-anchor', 'middle')
+                .attr('x', chartWidth2 / 2)
+                .attr('dy', 35)
+                .text('Unemployment // Underemployment Rate')
+
+            
 
             
             // create buttons, TODO move major categories to its own csv
@@ -494,14 +523,7 @@
                 .style("visibility", "hidden");
 
 
-            // X axis label
-
-            xlabel = xAxisArea2.append('text')
-                .attr('class', 'x label')
-                .attr('text-anchor', 'middle')
-                .attr('x', chartWidth2 / 2)
-                .attr('dy', 35)
-                .text('Unemployment // Underemployment Rate')
+            
 
 
 
@@ -617,8 +639,6 @@
                 }
             }
 
-
-
             function updateChart(selectedCategory) {
                 filtered = majorData.filter(d => majorCategories[selectedCategory].includes(d["Major"]));
 
@@ -643,30 +663,28 @@
                 xScale = onWageView ? wageScale : rateScale;
                 category = onWageView ? 'Median Wage Mid-Career' : 'Underemployment Rate'
 
-                xAxisArea2.transition()
+                
+
+                xAxis.transition()
                     .duration(300)
                     .call(d3.axisBottom(xScale))
 
+                gridlines = d3.axisBottom(xScale)
+                    .tickSize(-chartHeight2)
+                    .tickFormat("")
 
+                Gridlines.transition()
+                    .duration(300)
+                    .call(gridlines)
+                
                 updateLines(xScale, category);
                 updateCirclesbyView();
 
                 swapContainer.selectAll('button')
                     .text(d => (onWageView) ? "swap to employment rates" : "swap to wages")
 
-                // xAxisArea2.append('text')
-                //     .attr('class', 'x label')
-                //     .attr('text-anchor', 'middle')
-                //     .attr('x', chartWidth2 / 2)
-                //     .attr('dy', 35)
-                //     .text('Unemployment // Underemployment Rate')
-
-                // console.log(xlabel.empty())
-
-                // DOES NOT WORK
                 xlabel
-                    .text("TEST")
-                    //.text(d => (onWageView) ? "Median Wages Early // Mid-Career" : 'Unemployment // Underemployment Rate')
+                    .text(d => (onWageView) ? "Median Wages Early // Mid-Career" : 'Unemployment // Underemployment Rate')
 
 
             }
