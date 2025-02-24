@@ -61,7 +61,7 @@
     <div id="buttons"></div>
     <div id="swapButton"></div>
     <svg id='majors' height="800" width="600"
-        style="background: rgb(195, 195, 195); margin-top:5px; margin-left: 50px;">
+        style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;">
     </svg>
 
 
@@ -251,10 +251,6 @@
                     .text('')
             }
 
-            // let circleYW = createScrubCircle();
-            // let circleAW = createScrubCircle();
-            // let circleRG = createScrubCircle();
-
             let scrubCircles = [];
             let scrubText = [];
             
@@ -268,8 +264,10 @@
                 .attr('y', 0)
                 .attr('dy', -10)
                 .attr('text-anchor', 'middle')
-                .attr('fill', 'white')
+                .attr('fill', 'gray')
                 .text('')
+
+            
 
             // check if mouse movement is in the area of the window via the overlay. 
             let overlay = chartArea.append("rect")
@@ -283,6 +281,42 @@
                 .on("mousemove", mousemove);
 
 
+            // adjust the raw positions of the text so there is no overlap
+            function spaceText(positionlist){
+
+                // console.log(positionlist)
+
+                min = d3.min(positionlist)
+                max = d3.max(positionlist)
+                minPos = positionlist.indexOf(min)
+                maxPos = positionlist.indexOf(max)
+
+                // console.log(minPos)
+                // console.log(maxPos)
+
+                middlePos = (0 + 1 + 2) - (minPos + maxPos)
+                middle = positionlist[middlePos]
+
+                //console.log(middlePos)
+
+                // make sure there is space between the 3 numbers
+                offset = 15;
+                if (middle - min < offset){
+                    min = min - (offset - (middle - min));
+                }
+                if (max - middle < offset){
+                    max = max + (offset - (max - middle))
+                }
+
+                positionlist[maxPos] = max;
+                positionlist[minPos] = min;
+
+                return positionlist;
+
+
+            }
+
+
             function mousemove() {
                 var coordinates = d3.pointer(event, this);
                 // console.log(coordinates)
@@ -291,11 +325,14 @@
                     .attr('y1', 0)
                     .attr('x2', coordinates[0])
                     .attr('y2', chartHeight)
-                    .attr('stroke', 'white')
+                    .attr('stroke', 'gray')
 
                 // snap to the nearest time coordinate
                 let timestamp = new Date(dateScale.invert(coordinates[0]))
                 let element = unemployed[d3.bisect(dates, timestamp)]
+
+                positions = spaceText([rateScale(element[dataKeys[0]]), rateScale(element[dataKeys[1]]), rateScale(element[dataKeys[2]])])
+                // console.log(positions)
 
                 if(element){
 
@@ -306,11 +343,12 @@
                         scrubCircles[i]
                             .attr('cx', dateScale(parseTime(element['Date'])))
                             .attr('cy', rateScale(element[dataKeys[i]]))
-                            .attr('fill', keyColors[i])
+                            .attr('fill', d3.color(keyColors[i]))
 
                         scrubText[i]
                             .attr('x',   dateScale(parseTime(element['Date'])))
-                            .attr('y', rateScale(element[dataKeys[i]]))
+                            .attr('y', positions[i])
+                            .attr('fill', d3.color(keyColors[i]).darker(2))
                             .text(textFormat(element[dataKeys[i]]))
                         
                     }
@@ -529,7 +567,8 @@
                                 .attr("cx", d => xScale(d[dataKey]))),
                         update => update.transition().duration(300)
                             .attr("cx", d => xScale(d[dataKey]))
-                            .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2),
+                            .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
+                            .attr("fill", color),
                         exit => exit.remove()
                     );
 
@@ -563,8 +602,8 @@
             function updateCirclesbyView(){
                 // console.log(onWageView)
                 if (onWageView){
-                    updateCircles("unemp", 'Median Wage Early Career', "red", 'Median Wage Early Career', wageScale);
-                    updateCircles("undemp", 'Median Wage Mid-Career', "blue", 'Median Wage Mid-Career', wageScale);
+                    updateCircles("unemp", 'Median Wage Early Career', "sienna", 'Median Wage Early Career', wageScale);
+                    updateCircles("undemp", 'Median Wage Mid-Career', "green", 'Median Wage Mid-Career', wageScale);
                     
                 } else {
                     updateCircles("unemp", "Unemployment Rate", "red", "Unemployment Rate", rateScale);
@@ -620,7 +659,8 @@
 
                 // DOES NOT WORK
                 xlabel
-                    .text(d => (onWageView) ? "Median Wages Early // Mid-Career" : 'Unemployment // Underemployment Rate')
+                    .text("TEST")
+                    //.text(d => (onWageView) ? "Median Wages Early // Mid-Career" : 'Unemployment // Underemployment Rate')
 
 
             }
