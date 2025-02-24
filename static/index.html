@@ -232,6 +232,22 @@
 
             // mouse-over ------------
 
+            let textBGWidth = 55;
+            let textBG = chartArea.append('rect')
+                .attr("width", textBGWidth)
+                .attr("height", 20)
+                .style("fill", "none")
+                .attr('rx', 3)
+                .style('opacity', 0.5)
+
+            let yearText = chartArea.append('text')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('dy', -10)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'gray')
+                .text('')
+
             // .selectAll('.hover').data(unemployed).enter()
             let verticalLine = chartArea.append("line")
                 .attr('stroke-width', 1)
@@ -243,6 +259,9 @@
                 .attr('x2', chartWidth)
                 .attr('y2', chartHeight)
 
+            
+
+        
             // templates for creating scrubbing objects
             function createScrubCircle() {
                 return chartArea.append('circle')
@@ -271,15 +290,6 @@
                 scrubText.push(createScrubText());
             }
 
-            let yearText = chartArea.append('text')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('dy', -10)
-                .attr('text-anchor', 'middle')
-                .attr('fill', 'gray')
-                .text('')
-
-            
 
             // check if mouse movement is in the area of the window via the overlay. 
             let overlay = chartArea.append("rect")
@@ -347,7 +357,10 @@
 
                 if(element){
 
-                    positions = spaceText([rateScale(element[dataKeys[0]]), rateScale(element[dataKeys[1]]), rateScale(element[dataKeys[2]])])
+                    positions = [rateScale(element[dataKeys[0]]), rateScale(element[dataKeys[1]]), rateScale(element[dataKeys[2]])]
+                    positions = spaceText(positions)
+                    min = d3.min(positions)
+                    max = d3.max(positions)
 
 
                     textFormat = d3.format('.1%')
@@ -362,7 +375,7 @@
                         scrubText[i]
                             .attr('x',   dateScale(parseTime(element['Date'])))
                             .attr('y', positions[i])
-                            .attr('fill', d3.color(keyColors[i]).darker(2))
+                            .attr('fill', d3.color(keyColors[i]).darker(2.5))
                             .text(textFormat(element[dataKeys[i]]))
                         
                     }
@@ -371,6 +384,11 @@
                         .attr('x', coordinates[0])
                         .text((d3.timeFormat('%b-%Y'))(timestamp))
 
+                    textBG
+                        .attr('x', dateScale(parseTime(element['Date'])) - textBGWidth)
+                        .attr('y', min - 10)
+                        .attr('height', max - min + 20)
+                        .style("fill", "white")
 
                 }
 
@@ -392,6 +410,9 @@
                 }
 
                 yearText.text('')
+
+                textBG
+                .style("fill", "none")
             }
 
         }
