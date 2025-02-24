@@ -46,28 +46,33 @@
             Federal Reserve</a>.
     </p>
 
-
     <svg id='unemployment' height="250" width="700"
         style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;">
     </svg>
 
+    <svg id='key' height="100" width="300"
+        style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 10px;">
+    </svg>
+
     <p>
         Recent graduates have a higher employment rate, but do these graduates require their degree for their work?
-
     </p>
 
     <div id="buttons"></div>
+    <div id="swapButton"></div>
     <svg id='majors' height="800" width="600"
         style="background: rgb(195, 195, 195); margin-top:5px; margin-left: 50px;">
     </svg>
 
 
+
     <!-- Scripts -->
     <script>
+        // UNEMPLOYMENT GRAPH V. TIME
         const plot = d3.select('#unemployment')
         const width = plot.attr('width')
         const height = plot.attr('height')
-        const margin = { top: 50, right: 35, bottom: 35, left: 35 };
+        const margin = { top: 50, right: 35, bottom: 35, left: 60 };
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
         const yAxisArea = plot.append("g")
@@ -78,10 +83,48 @@
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
+        // key
+        const key = d3.select('#key')
+        const kWidth = key.attr('width')
+        const kHeight = key.attr('height')
+
+        const ywColor = 'red'
+        const awColor = 'blue'
+        const rgColor = 'green'
+
+        const keyTitles = ['Recent graduates (22-27)', 'All Workers ()', 'Young Workers (no Degree)']
+        const keyColors = [rgColor, awColor, ywColor]
+        const dataKeys = ['Recent graduates', 'All workers', 'Young workers']
+
+        function buildKey(){
+            x = 0;
+
+            while (x < 3){
+
+                key.append('line')
+                    .attr('stroke-width', 1)
+                    .attr('stroke', keyColors[x])
+                    .attr('x1', 20)
+                    .attr('y1', (x+1) * kHeight/3 - 15)
+                    .attr('x2', 60)
+                    .attr('y2', (x+1) * kHeight/3 - 15)
+
+                key.append('text')
+                    .attr('text-anchor', 'left')
+                    .attr('x', 80)
+                    .attr('y', (x+1)*kHeight/3 - 10)
+                    .text(keyTitles[x])
+
+                x++
+
+            }
+        }
+
+        buildKey();
+
 
         const requestMarketData = async function () {
-            var unemployed = await d3.csv("datasets/unemployed.csv", d3.autotype)
-            // console.log(unemployed)
+            var unemployed = await d3.csv("datasets/unemployed-filtered.csv", d3.autotype)
 
             // parse time
             var parseTime = d3.timeParse("%m/%d/%Y")
@@ -92,9 +135,8 @@
             });
             // console.log(dates)
 
-            const minRateExtent = d3.extent(unemployed, d => d3.min([Number(d['Young workers']), Number(d['All workers']), Number(d['recent Graduates'])]))
             const maxRateExtent = d3.extent(unemployed, d => d3.max([Number(d['Young workers']), Number(d['All workers']), Number(d['recent Graduates'])]))
-            const rateExtent = d3.extent([minRateExtent[0] - 2, maxRateExtent[1] + 1])
+            const rateExtent = d3.extent([0, maxRateExtent[1]*1.1])
             const dateExtent = d3.extent(dates)
 
             // console.log(minRateExtent)
@@ -121,11 +163,24 @@
                 .domain(rateExtent)
                 .range([0, chartHeight])
 
+            let percentFormat = d3.format(".0%");
+
             let leftAxis = d3.axisLeft(rateScale)
+                .tickFormat(percentFormat)
 
             yAxisArea.append('g')
                 .attr('class', 'y axis')
                 .call(leftAxis)
+
+            /// axis labels
+
+            yAxisArea.append('text')
+                .attr('class', 'y label')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -chartHeight/2)
+                .attr('dy', -35)
+                .text('unemployment rate')
 
             // plot lines
 
@@ -169,13 +224,14 @@
             let verticalLine = chartArea.append("line")
                 .attr('stroke-width', 1)
                 .attr('opacity', 0.5)
-                .attr('stroke', 'white')
+                .attr('stroke', 'none')
                 .attr('fill', 'none')
                 .attr('x1', chartWidth)
                 .attr('y1', 0)
                 .attr('x2', chartWidth)
                 .attr('y2', chartHeight)
 
+            // templates for creating scrubbing objects
             function createScrubCircle() {
                 return chartArea.append('circle')
                     .attr('cx', 0)
@@ -185,19 +241,35 @@
                     .attr('fill', 'none')
             }
 
-            let circleYW = createScrubCircle();
-            let circleAW = createScrubCircle();
-            let circleRG = createScrubCircle();
+            function createScrubText(){
+                return chartArea.append('text')
+                    .attr('text-anchor', 'end')
+                    .attr('dominant-baseline', 'middle')
+                    .attr('x', 0)
+                    .attr('dx', -5)
+                    .attr('y', 0)
+                    .text('')
+            }
 
-            let text = chartArea.append('text')
+            // let circleYW = createScrubCircle();
+            // let circleAW = createScrubCircle();
+            // let circleRG = createScrubCircle();
+
+            let scrubCircles = [];
+            let scrubText = [];
+            
+            for (let i = 0;i < 3;i++){
+                scrubCircles.push(createScrubCircle());
+                scrubText.push(createScrubText());
+            }
+
+            let yearText = chartArea.append('text')
                 .attr('x', 0)
                 .attr('y', 0)
                 .attr('dy', -10)
                 .attr('text-anchor', 'middle')
                 .attr('fill', 'white')
                 .text('')
-
-
 
             // check if mouse movement is in the area of the window via the overlay. 
             let overlay = chartArea.append("rect")
@@ -225,27 +297,30 @@
                 let timestamp = new Date(dateScale.invert(coordinates[0]))
                 let element = unemployed[d3.bisect(dates, timestamp)]
 
-                // console.log(element)
+                if(element){
 
-                circleYW
-                    .attr('cx', dateScale(parseTime(element['Date'])))
-                    .attr('cy', rateScale(element["Young workers"]))
-                    .attr('fill', 'red')
+                    textFormat = d3.format('.1%')
 
-                circleAW
-                    .attr('cx', dateScale(parseTime(element['Date'])))
-                    .attr('cy', rateScale(element["All workers"]))
-                    .attr('fill', 'blue')
+                    for (let i = 0;i < 3;i++){
 
-                circleRG
-                    .attr('cx', dateScale(parseTime(element['Date'])))
-                    .attr('cy', rateScale(element["Recent graduates"]))
-                    .attr('fill', 'green')
+                        scrubCircles[i]
+                            .attr('cx', dateScale(parseTime(element['Date'])))
+                            .attr('cy', rateScale(element[dataKeys[i]]))
+                            .attr('fill', keyColors[i])
 
-                text
-                    .attr('x', coordinates[0])
-                    .text((d3.timeFormat('%b-%Y'))(timestamp))
+                        scrubText[i]
+                            .attr('x',   dateScale(parseTime(element['Date'])))
+                            .attr('y', rateScale(element[dataKeys[i]]))
+                            .text(textFormat(element[dataKeys[i]]))
+                        
+                    }
 
+                    yearText
+                        .attr('x', coordinates[0])
+                        .text((d3.timeFormat('%b-%Y'))(timestamp))
+
+
+                }
 
 
             }
@@ -258,16 +333,13 @@
 
                 verticalLine.attr('stroke', 'none')
 
-                circleYW
-                    .attr('fill', 'none')
+                for (let i = 0;i < 3;i++){
 
-                circleAW
-                    .attr('fill', 'none')
+                    scrubCircles[i].attr('fill', 'none')
+                    scrubText[i].text('')
+                }
 
-                circleRG
-                    .attr('fill', 'none')
-
-                text.text('')
+                yearText.text('')
             }
 
         }
@@ -275,7 +347,10 @@
         requestMarketData();
     </script>
 
+
     <script>
+        // MAJOR OUTCOMES, UNEMPLOYMENT & WAGES
+
         const plot2 = d3.select('#majors')
         const width2 = plot2.attr('width')
         const height2 = plot2.attr('height')
@@ -288,8 +363,15 @@
             .attr("transform", "translate(" + margin2.left + "," + (chartHeight2 + 6 + margin2.top) + ")");
         const chartArea2 = plot2.append("g").attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
+
+
         const requestMajorData = async function () {
             const majorData = await d3.csv('datasets/majorOutcomes.csv', d3.autotype);
+
+            majorData.forEach(d => {
+                d['Median Wage Early Career'] = parseFloat( d['Median Wage Early Career'] .replace(/,/g, ''))
+                d['Median Wage Mid-Career'] = parseFloat( d['Median Wage Mid-Career'] .replace(/,/g, ''))
+            });
 
             const rateScale = d3.scaleLinear()
                 .domain([0, 100])
@@ -302,6 +384,8 @@
             xAxisArea2.append('g')
                 .call(d3.axisBottom(rateScale));
 
+            
+            // create buttons, TODO move major categories to its own csv
             const majorCategories = {
                 "All": majorData.map(d => d["Major"]),
                 "STEM": ["Computer Science", "Mathematics", "Physics", "Chemistry", "Biochemistry", "Biology",
@@ -328,6 +412,34 @@
                     updateChart(category);
                 });
 
+            
+
+            // swap button
+
+            // Median Wage Early Career,Median Wage Mid-Career
+            earlyWageExtent = d3.extent(majorData, d => d['Median Wage Early Career'])
+            midWageExtent = d3.extent(majorData, d => d['Median Wage Mid-Career'])
+
+            wageExtent = d3.extent([earlyWageExtent[0], midWageExtent[1]])
+            wageScale = d3.scaleLinear()
+                .domain(wageExtent)
+                .range([0, chartWidth2])
+            
+            let onWageView = false;
+
+            const swapContainer = d3.select('#swapButton')
+
+            swapContainer.selectAll('button')
+                .data([onWageView])
+                .enter()
+                .append('button')
+                .text(d => (onWageView) ? "swap to employment rates" : "swap to wages")
+                .on('click', function(event, category) {
+                   onWageView = !onWageView
+                   swapChart();
+                })
+
+        
             const tooltip = d3.selectAll("body")
                 .append("rect")
                 .style("position", "absolute")
@@ -337,41 +449,46 @@
                 .style("border", "1px solid black")
                 .style("visibility", "hidden");
 
-            function updateChart(selectedCategory) {
-                let filtered = majorData.filter(d => majorCategories[selectedCategory].includes(d["Major"]));
 
-                majorScale.domain(filtered.map(d => d["Major"]));
 
-                yAxisArea2.transition()
-                    .duration(300)
-                    .call(d3.axisLeft(majorScale));
+            // update the graph based on button clicks
+
+            let filtered; // filtered data
+
+            function updateLines(xScale, category){
 
                 const lines = chartArea2.selectAll('line')
-                    .data(filtered)
-                    .join(
-                        enter => enter.append("line")
-                            .attr("stroke", "gray")
-                            .attr("stroke-width", 2)
-                            .attr("x1", rateScale(0))
-                            .attr("y1", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
-                            .attr("x2", d => rateScale(d["Underemployment Rate"]))
-                            .attr("y2", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2),
-                        update => update.transition().duration(300)
-                            .attr("x1", rateScale(0))
-                            .attr("y1", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
-                            .attr("x2", d => rateScale(d["Underemployment Rate"]))
-                            .attr("y2", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2),
-                        exit => exit.remove()
-                    );
+                .data(filtered)
+                .join(
+                    enter => enter.append("line")
+                        .attr("stroke", "gray")
+                        .attr("stroke-width", 2)
+                        .attr("x1", 0)
+                        .attr("y1", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
+                        .attr("x2", d => xScale(d[category]))
+                        .attr("y2", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2),
+                    update => update.transition().duration(300)
+                        .attr("x1", 0)
+                        .attr("y1", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
+                        .attr("x2", d => xScale(d[category]))
+                        .attr("y2", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2),
+                    exit => exit.remove()
+                );
 
                 lines.on("mouseover", function (event, d) {
                     d3.select(this)
                         .attr("stroke", "orange")
                         .attr("stroke-width", 6);
 
-                    tooltip.style("visibility", "visible")
+                    if (onWageView){
+                        tooltip.style("visibility", "visible")
+                        .text(`${d["Major"]} - Median Wage Early Career: $${d["Median Wage Early Career"]} // Median Wage Mid-Career: $${d["Median Wage Mid-Career"]}`);
+                    } else {
+                        tooltip.style("visibility", "visible")
                         .text(`${d["Major"]} - Unemployment Rate: ${d["Unemployment Rate"]}% // Underemployment Rate: ${d["Underemployment Rate"]}%`);
-                })
+                    }
+
+                    })
                     .on("mousemove", function (event) {
                         tooltip.style("left", (event.pageX + 10) + "px")
                             .style("top", (event.pageY - 20) + "px");
@@ -383,48 +500,107 @@
                         tooltip.style("visibility", "hidden");
                     });
 
-                function updateCircles(major, dataKey, color, label) {
-                    const circles = chartArea2.selectAll(`circle.${major}`)
-                        .data(filtered)
-                        .join(
-                            enter => enter.append("circle")
-                                .attr("class", major)
-                                .attr("fill", color)
-                                .attr("r", 4)
-                                .attr("cx", 0)
-                                .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
-                                .call(enter => enter.transition().duration(300)
-                                    .attr("cx", d => rateScale(d[dataKey]))),
-                            update => update.transition().duration(300)
-                                .attr("cx", d => rateScale(d[dataKey]))
-                                .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2),
-                            exit => exit.remove()
-                        );
 
-                    circles.on("mouseover", function (event, d) {
-                        d3.select(this)
-                            .attr("r", 6)
-                            .attr("fill", "black");
-
-                        tooltip.style("visibility", "visible")
-                            .text(`${d["Major"]} - ${label}: ${d[dataKey]}%`)
-                    })
-                        .on("mousemove", function (event) {
-                            tooltip.style("left", (event.pageX + 10) + "px")
-                                .style("top", (event.pageY - 20) + "px");
-                        })
-                        .on("mouseout", function () {
-                            d3.select(this)
-                                .attr("r", 4)
-                                .attr("fill", color);
-                            tooltip.style("visibility", "hidden");
-                        });
-                }
-
-                updateCircles("unemp", "Unemployment Rate", "red", "Unemployment Rate");
-                updateCircles("undemp", "Underemployment Rate", "blue", "Underemployment Rate");
             }
 
+            function updateCircles(major, dataKey, color, label, xScale) {
+
+                console.log(onWageView)
+                const circles = chartArea2.selectAll(`circle.${major}`)
+                    .data(filtered)
+                    .join(
+                        enter => enter.append("circle")
+                            .attr("class", major)
+                            .attr("fill", color)
+                            .attr("r", 4)
+                            .attr("cx", 0)
+                            .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
+                            .call(enter => enter.transition().duration(300)
+                                .attr("cx", d => xScale(d[dataKey]))),
+                        update => update.transition().duration(300)
+                            .attr("cx", d => xScale(d[dataKey]))
+                            .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2),
+                        exit => exit.remove()
+                    );
+
+                circles.on("mouseover", function (event, d) {
+                    d3.select(this)
+                        .attr("r", 6)
+                        .attr("fill", "black");
+
+                    if (onWageView){
+                        tooltip.style("visibility", "visible")
+                        .text(`${d["Major"]} - ${label}: $${d[dataKey]}`)
+
+                    } else {
+                        tooltip.style("visibility", "visible")
+                        .text(`${d["Major"]} - ${label}: ${d[dataKey]}%`)
+                    }
+                   
+                })
+                    .on("mousemove", function (event) {
+                        tooltip.style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 20) + "px");
+                    })
+                    .on("mouseout", function () {
+                        d3.select(this)
+                            .attr("r", 4)
+                            .attr("fill", color);
+                        tooltip.style("visibility", "hidden");
+                    });
+            }
+
+            function updateCirclesbyView(){
+                console.log(onWageView)
+                if (onWageView){
+                    updateCircles("unemp", 'Median Wage Early Career', "red", 'Median Wage Early Career', wageScale);
+                    updateCircles("undemp", 'Median Wage Mid-Career', "blue", 'Median Wage Mid-Career', wageScale);
+                    
+                } else {
+                    updateCircles("unemp", "Unemployment Rate", "red", "Unemployment Rate", rateScale);
+                    updateCircles("undemp", "Underemployment Rate", "blue", "Underemployment Rate", rateScale);
+                }
+            }
+
+
+
+            function updateChart(selectedCategory) {
+                filtered = majorData.filter(d => majorCategories[selectedCategory].includes(d["Major"]));
+
+                majorScale.domain(filtered.map(d => d["Major"]));
+
+                yAxisArea2.transition()
+                    .duration(300)
+                    .call(d3.axisLeft(majorScale));
+
+                
+                if (onWageView){
+                    updateLines(wageScale, 'Median Wage Mid-Career')
+                } else {
+                    updateLines(rateScale, "Underemployment Rate")
+                }   
+                
+                updateCirclesbyView();
+
+            }
+
+            function swapChart(){
+                xScale = onWageView ? wageScale : rateScale;
+                category = onWageView ? 'Median Wage Mid-Career' : 'Underemployment Rate'
+
+                xAxisArea2.transition()
+                    .duration(300)
+                    .call(d3.axisBottom(xScale));
+
+
+                updateLines(xScale, category);
+                updateCirclesbyView();
+
+                swapContainer.selectAll('button')
+                    .text(d => (onWageView) ? "swap to employment rates" : "swap to wages")
+
+
+            }
             updateChart("All");
         };
 
