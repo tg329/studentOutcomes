@@ -354,7 +354,7 @@
         const plot2 = d3.select('#majors')
         const width2 = plot2.attr('width')
         const height2 = plot2.attr('height')
-        const margin2 = { top: 20, right: 40, bottom: 35, left: 200 };
+        const margin2 = { top: 20, right: 40, bottom: 60, left: 200 };
         const chartWidth2 = width2 - margin2.left - margin2.right;
         const chartHeight2 = height2 - margin2.top - margin2.bottom;
         const yAxisArea2 = plot2.append("g")
@@ -450,6 +450,16 @@
                 .style("visibility", "hidden");
 
 
+            // X axis label
+
+            xlabel = xAxisArea2.append('text')
+                .attr('class', 'x label')
+                .attr('text-anchor', 'middle')
+                .attr('x', chartWidth2 / 2)
+                .attr('dy', 35)
+                .text('Unemployment // Underemployment Rate')
+
+
 
             // update the graph based on button clicks
 
@@ -505,7 +515,7 @@
 
             function updateCircles(major, dataKey, color, label, xScale) {
 
-                console.log(onWageView)
+                // console.log(onWageView)
                 const circles = chartArea2.selectAll(`circle.${major}`)
                     .data(filtered)
                     .join(
@@ -551,7 +561,7 @@
             }
 
             function updateCirclesbyView(){
-                console.log(onWageView)
+                // console.log(onWageView)
                 if (onWageView){
                     updateCircles("unemp", 'Median Wage Early Career', "red", 'Median Wage Early Career', wageScale);
                     updateCircles("undemp", 'Median Wage Mid-Career', "blue", 'Median Wage Mid-Career', wageScale);
@@ -590,7 +600,7 @@
 
                 xAxisArea2.transition()
                     .duration(300)
-                    .call(d3.axisBottom(xScale));
+                    .call(d3.axisBottom(xScale))
 
 
                 updateLines(xScale, category);
@@ -598,6 +608,19 @@
 
                 swapContainer.selectAll('button')
                     .text(d => (onWageView) ? "swap to employment rates" : "swap to wages")
+
+                // xAxisArea2.append('text')
+                //     .attr('class', 'x label')
+                //     .attr('text-anchor', 'middle')
+                //     .attr('x', chartWidth2 / 2)
+                //     .attr('dy', 35)
+                //     .text('Unemployment // Underemployment Rate')
+
+                // console.log(xlabel.empty())
+
+                // DOES NOT WORK
+                xlabel
+                    .text(d => (onWageView) ? "Median Wages Early // Mid-Career" : 'Unemployment // Underemployment Rate')
 
 
             }
