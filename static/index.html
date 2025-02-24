@@ -67,7 +67,7 @@
         <br>
         The 'Underemployment Rate' is defined by the NY Federal Reserve as the share of graduates working in jobs that typically do not require a college degree. 
         <br>
-        Here we can see that percentage broken down by majors
+        Here we can see that percentage broken down by major:
     </p>
 
     <div id="buttons"></div>
@@ -192,7 +192,7 @@
                 .attr('transform', 'rotate(-90)')
                 .attr('x', -chartHeight/2)
                 .attr('dy', -35)
-                .text('unemployment rate')
+                .text('Unemployment Rate')
 
             // plot lines
 
@@ -467,7 +467,7 @@
                 .tickSize(-chartHeight2)
                 .tickFormat(""))
 
-            // X axis label
+            // x axis label
 
             xlabel = xAxisArea2.append('text')
                 .attr('class', 'x label')
@@ -476,10 +476,12 @@
                 .attr('dy', 35)
                 .text('Unemployment // Underemployment Rate')
 
-            
+            // Y Axis
 
-            
-            // create buttons, TODO move major categories to its own csv
+            let yAxis = yAxisArea2.append('g')
+ 
+            // create buttons
+            // TODO move major categories to its own csv
             const majorCategories = {
                 "All": majorData.map(d => d["Major"]),
                 "STEM": ["Computer Science", "Mathematics", "Physics", "Chemistry", "Biochemistry", "Biology",
@@ -492,7 +494,8 @@
                     "Philosophy", "History", "Theology and Religion", "Foreign Language", "Liberal Arts", "English Language"],
                 "Health": ["Nursing", "Pharmacy", "Medical Technicians", "Treatment Therapy", "Health Services"],
                 "Communications": ["Journalism", "Mass Media", "Advertising and Public Relations", "Communications"],
-                "Miscellaneous": ["Family and Consumer Sciences", "Construction Services", "Leisure and Hospitality", "Miscellaneous Technologies"]
+                "Miscellaneous": ["Family and Consumer Sciences", "Construction Services", "Leisure and Hospitality", "Miscellaneous Technologies"],
+                "Selected Only" : []
             };
 
             const buttonContainer = d3.select("#buttons");
@@ -506,8 +509,7 @@
                     updateChart(category);
                 });
 
-            
-
+        
             // swap button
 
             // Median Wage Early Career,Median Wage Mid-Career
@@ -533,7 +535,7 @@
                    swapChart();
                 })
 
-        
+            // hover tooltip
             const tooltip = d3.selectAll("body")
                 .append("rect")
                 .style("position", "absolute")
@@ -543,14 +545,10 @@
                 .style("border", "1px solid black")
                 .style("visibility", "hidden");
 
-
-            
-
-
-
             // update the graph based on button clicks
 
             let filtered; // filtered data
+            let selection = [] // list of selected majors
 
             function updateLines(xScale, category){
 
@@ -661,15 +659,54 @@
             }
 
             function updateChart(selectedCategory) {
-                filtered = majorData.filter(d => majorCategories[selectedCategory].includes(d["Major"]));
+                filtered = majorData.filter(d => ( majorCategories[selectedCategory].includes(d["Major"]) || selection.includes(d['Major']) ) );
 
                 majorScale.domain(filtered.map(d => d["Major"]));
 
-                yAxisArea2.transition()
+                yAxis.transition()
                     .duration(300)
                     .call(d3.axisLeft(majorScale));
 
-                
+                // add click events to ticks
+                yAxis.selectAll('.tick')
+                    .on('mouseover', function(event, d) {
+                        index = selection.indexOf(d)
+
+                        if (index == -1){
+                            tickText = d3.select(this).select('text')
+                            tickText.attr('fill', 'red')    
+                        }
+                                     
+                    })
+                    .on('mouseout', function(event, d) {
+                        index = selection.indexOf(d)
+                        
+                        if (index == -1){
+                            tickText = d3.select(this).select('text')
+                            tickText.attr('fill', 'black') 
+                        }
+                                       
+                    })
+                    .on('click', function(event, d) {
+                        console.log(d)
+                        index = selection.indexOf(d)
+                        if (index == -1){
+                            // add to selection
+                            tickText = d3.select(this).select('text')
+                            tickText.attr('fill', 'chocolate')  
+                            selection.push(d) 
+                        }   else {
+                            //remove from selection
+                            tickText = d3.select(this).select('text')
+                            tickText.attr('fill', 'red')  
+                            selection.splice(index, 1)
+
+                            updateChart(selectedCategory)
+                        }
+                        console.log(selection)
+
+                    })
+
                 if (onWageView){
                     updateLines(wageScale, 'Median Wage Mid-Career')
                 } else {
@@ -677,7 +714,6 @@
                 }   
                 
                 updateCirclesbyView();
-
             }
 
             function swapChart(){
