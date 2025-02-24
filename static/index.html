@@ -84,7 +84,7 @@
         const plot = d3.select('#unemployment')
         const width = plot.attr('width')
         const height = plot.attr('height')
-        const margin = { top: 50, right: 35, bottom: 35, left: 60 };
+        const margin = { top:30, right: 35, bottom: 35, left: 60 };
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
         const yAxisArea = plot.append("g")
@@ -427,7 +427,7 @@
         const plot2 = d3.select('#majors')
         const width2 = plot2.attr('width')
         const height2 = plot2.attr('height')
-        const margin2 = { top: 20, right: 40, bottom: 60, left: 200 };
+        const margin2 = { top: 60, right: 40, bottom: 60, left: 200 };
         const chartWidth2 = width2 - margin2.left - margin2.right;
         const chartHeight2 = height2 - margin2.top - margin2.bottom;
         const yAxisArea2 = plot2.append("g")
@@ -436,9 +436,12 @@
             .attr("transform", "translate(" + margin2.left + "," + (chartHeight2 + 6 + margin2.top) + ")");
         const chartArea2 = plot2.append("g").attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
-
+        const unemploymentTitle = 'Unemployment // Underemployment Rate By Major'
+        const wagesTitle = "Median Wages Early // Mid-Career By Major"
 
         const requestMajorData = async function () {
+            
+
             const majorData = await d3.csv('datasets/majorOutcomes.csv', d3.autotype);
 
             majorData.forEach(d => {
@@ -453,6 +456,17 @@
             const majorScale = d3.scaleBand()
                 .range([0, chartHeight2])
                 .padding(0.1);
+
+            // Chart Title
+
+            let titleTag = 'ALL'
+            let currentTitle = unemploymentTitle
+            title = plot2.append('text')
+                .attr('class', 'x label')
+                .attr('text-anchor', 'left')
+                .attr('x', 20)
+                .attr('y', 40)
+                .text(currentTitle +  ': ' + titleTag)
 
             // x Axis
 
@@ -529,7 +543,7 @@
                 .data([onWageView])
                 .enter()
                 .append('button')
-                .text(d => (onWageView) ? "swap to employment rates" : "swap to wages")
+                .text(d => (onWageView) ? "SWAP TO EMPLOYMENT RATES VIEW" : "SWAP TO WAGES VIEW")
                 .on('click', function(event, category) {
                    onWageView = !onWageView
                    swapChart();
@@ -663,6 +677,10 @@
 
                 majorScale.domain(filtered.map(d => d["Major"]));
 
+                titleTag = selectedCategory
+                title.text(currentTitle +  ': ' + titleTag)
+
+
                 yAxis.transition()
                     .duration(300)
                     .call(d3.axisLeft(majorScale));
@@ -718,9 +736,10 @@
 
             function swapChart(){
                 xScale = onWageView ? wageScale : rateScale;
-                category = onWageView ? 'Median Wage Mid-Career' : 'Underemployment Rate'
-
+                category = onWageView ? 'Median Wage Mid-Career' : 'Underemployment Rate'     
+                currentTitle = onWageView ? wagesTitle : unemploymentTitle;
                 
+                title.text(currentTitle +  ': ' + titleTag)
 
                 xAxis.transition()
                     .duration(300)
@@ -738,7 +757,7 @@
                 updateCirclesbyView();
 
                 swapContainer.selectAll('button')
-                    .text(d => (onWageView) ? "swap to employment rates" : "swap to wages")
+                    .text(d => (onWageView) ? "SWAP TO EMPLOYMENT RATES VIEW" : "SWAP TO WAGES VIEW")
 
                 xlabel
                     .text(d => (onWageView) ? "Median Wages Early // Mid-Career" : 'Unemployment // Underemployment Rate')
