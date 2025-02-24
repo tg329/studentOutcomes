@@ -341,7 +341,7 @@
                     .duration(300)
                     .call(d3.axisLeft(majorScale));
 
-                chartArea2.selectAll('line').remove();
+                // chartArea2.selectAll('line').remove();
 
                 const lines = chartArea2.selectAll('line').data(filtered)
                     .join('line')
