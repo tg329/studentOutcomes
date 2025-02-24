@@ -50,12 +50,16 @@
         style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;">
     </svg>
 
-    <svg id='key' height="100" width="300"
+    <svg id='key' height="100" width="350"
         style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 10px;">
     </svg>
 
     <p>
-        Recent graduates have a higher employment rate, but do these graduates require their degree for their work?
+        Recent graduates have a higher employment rate, but do these graduates require their degree for their work? 
+        <br>
+        The 'Underemployment Rate' is defined by the NY Federal Reserve as the share of graduates working in jobs that typically do not require a college degree. 
+        <br>
+        Here we can see that percentage broken down by majors
     </p>
 
     <div id="buttons"></div>
@@ -92,7 +96,7 @@
         const awColor = 'blue'
         const rgColor = 'green'
 
-        const keyTitles = ['Recent graduates (22-27)', 'All Workers ()', 'Young Workers (no Degree)']
+        const keyTitles = ['Recent graduates (Ages 22-27)', 'All Workers (Ages 16-65)', 'Young Workers (22-27, no Degree)']
         const keyColors = [rgColor, awColor, ywColor]
         const dataKeys = ['Recent graduates', 'All workers', 'Young workers']
 
@@ -331,10 +335,12 @@
                 let timestamp = new Date(dateScale.invert(coordinates[0]))
                 let element = unemployed[d3.bisect(dates, timestamp)]
 
-                positions = spaceText([rateScale(element[dataKeys[0]]), rateScale(element[dataKeys[1]]), rateScale(element[dataKeys[2]])])
                 // console.log(positions)
 
                 if(element){
+
+                    positions = spaceText([rateScale(element[dataKeys[0]]), rateScale(element[dataKeys[1]]), rateScale(element[dataKeys[2]])])
+
 
                     textFormat = d3.format('.1%')
 
