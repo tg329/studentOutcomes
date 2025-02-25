@@ -844,20 +844,12 @@
                 yAxis.transition().duration(300).call(d3.axisLeft(majorScale));
 
                 yAxis.selectAll('.tick')
-                    .on('mouseover', function (event, d) {
-                        if (!selection.includes(d)) d3.select(this).select('text').attr('fill', 'red');
-                    })
-                    .on('mouseout', function (event, d) {
-                        if (!selection.includes(d)) d3.select(this).select('text').attr('fill', 'black');
-                    })
                     .on('click', function (event, d) {
                         let index = selection.indexOf(d);
                         if (index === -1) {
                             selection.push(d);
-                            d3.select(this).select('text').attr('fill', 'black');
                         } else {
                             selection.splice(index, 1);
-                            d3.select(this).select('text').attr('fill', 'red');
                             updateChart("All");
                         }
                     });
