@@ -626,7 +626,7 @@
                     .join(
                         enter => enter.append("line")
                             .attr("stroke", "gray")
-                            .attr("stroke-width", 5)
+                            .attr("stroke-width", 4)
                             .attr("x1", 0)
                             .attr("y1", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
                             .attr("x2", d => xScale(d[category]))
@@ -665,7 +665,7 @@
                     .on("mouseout", function () {
                         d3.select(this)
                             .attr("stroke", "gray")
-                            .attr("stroke-width", 5);
+                            .attr("stroke-width", 4);
                         tooltip.style("visibility", "hidden");
                     });
 
@@ -681,7 +681,7 @@
                         enter => enter.append("circle")
                             .attr("class", major)
                             .attr("fill", color)
-                            .attr("r", 3.5)
+                            .attr("r", 4)
                             .attr("cx", 0)
                             .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
                             .call(enter => enter.transition().duration(300)
@@ -716,7 +716,7 @@
                     })
                     .on("mouseout", function () {
                         d3.select(this)
-                            .attr("r", 3.5)
+                            .attr("r", 4)
                             .attr("fill", color);
                         tooltip.style("visibility", "hidden");
                     });
