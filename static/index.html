@@ -113,10 +113,10 @@
     <h3>Unemployment Rates Over the Years</h3>
     <div>
         <svg id='unemployment' height="300" width="650"
-            style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;">
+            style=" margin-top:5px; margin-left: 50px;">
         </svg>
         <svg id='key' height="100" width="350"
-            style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 10px;">
+            style=" margin-top:5px; margin-left: 10px;">
         </svg>
     </div>
 
@@ -626,7 +626,7 @@
                     .join(
                         enter => enter.append("line")
                             .attr("stroke", "gray")
-                            .attr("stroke-width", 2)
+                            .attr("stroke-width", 5)
                             .attr("x1", 0)
                             .attr("y1", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
                             .attr("x2", d => xScale(d[category]))
@@ -642,7 +642,7 @@
                 lines.on("mouseover", function (event, d) {
                     d3.select(this)
                         .attr("stroke", "orange")
-                        .attr("stroke-width", 6);
+                        .attr("stroke-width", 8);
 
                     if (onWageView) {
                         tooltip.style("visibility", "visible")
@@ -665,7 +665,7 @@
                     .on("mouseout", function () {
                         d3.select(this)
                             .attr("stroke", "gray")
-                            .attr("stroke-width", 2);
+                            .attr("stroke-width", 5);
                         tooltip.style("visibility", "hidden");
                     });
 
@@ -699,7 +699,7 @@
                         .attr("fill", "orange");
 
 
-                     
+
                     if (onWageView) {
                         tooltip.style("visibility", "visible")
                             .html(`<strong>${d["Major"]} </strong> - ${label}: $${d[dataKey]}`)
@@ -842,17 +842,6 @@
                 majorScale.domain(filtered.map(d => d["Major"]));
 
                 yAxis.transition().duration(300).call(d3.axisLeft(majorScale));
-
-                yAxis.selectAll('.tick')
-                    .on('click', function (event, d) {
-                        let index = selection.indexOf(d);
-                        if (index === -1) {
-                            selection.push(d);
-                        } else {
-                            selection.splice(index, 1);
-                            updateChart("All");
-                        }
-                    });
 
                 updateLines(onWageView ? wageScale : rateScale, onWageView ? "Median Wage Mid-Career" : "Underemployment Rate");
                 updateCirclesbyView();
