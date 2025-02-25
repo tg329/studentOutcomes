@@ -11,25 +11,34 @@
     <style>
         body {
             font-family: Georgia, 'Times New Roman', Times, serif;
-            margin: 20px;
             background-color: #f0f0f0;
+            color: #333;
+            text-align: center;
         }
 
         h1 {
-            color: #333;
+            font-size: 40px;
         }
 
         p {
-            margin: 5 auto 20px;
+            font-size: 16px;
+            max-width: 600px;
+            margin: 0 auto 10px;
+            text-align: left;
         }
 
         a {
             color: #007BFF;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
 
         svg {
             margin: 10px 0;
-            border-radius: 1px;
+            border-radius: 4px;
         }
 
         .gridlines line {
@@ -39,45 +48,73 @@
         .gridlines .domain {
             stroke: none;
         }
+
+        button {
+            background-color: #8391a0;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #155dab;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            width: 250px;
+            margin-bottom: 10px;
+        }
+
+        svg {
+            background: rgb(224, 224, 224);
+            border-radius: 5px;
+        }
     </style>
 </head>
 
 <body>
-
-    <!-- Header -->
     <h1>
         How much is your major <strong>really</strong> worth?
     </h1>
     <p>
-        A bit depressing to consider, but lets look at some data regarding the current job market.
-        <br> Data sourced from the <a href="https://www.newyorkfed.org/research/college-labor-market#--:overview">NY
-            Federal Reserve</a>.
+        A bit depressing to consider, but let's look at some data regarding our recent job market (2023).
     </p>
+    <p> Data sourced from the <a href="https://www.newyorkfed.org/research/college-labor-market#--:overview"> NY
+            Federal Reserve</a>.</p>
 
-    <svg id='unemployment' height="250" width="700"
-        style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;">
-    </svg>
+    <h3>Unemployment Rates Over the Years</h3>
+    <div class="container">
+        <svg id='unemployment' height="300" width="650"
+            style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;">
+        </svg>
+        <svg id='key' height="100" width="350"
+            style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 10px;">
+        </svg>
+    </div>
 
-    <svg id='key' height="100" width="350" style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 10px;">
-    </svg>
+    <h3>Major Outcomes</h3>
 
-    <p>
+    <p> How do different majors fare in terms of unemployment and wages?
         Recent graduates have a higher employment rate, but do these graduates require their degree for their work?
-        <br>
-        The 'Underemployment Rate' is defined by the NY Federal Reserve as the share of graduates working in jobs that
-        typically do not require a college degree.
-        <br>
-        Here we can see that percentage broken down by major:
     </p>
+    <p><strong>*Underemployment Rate</strong> is defined by the NYFR as the share of graduates working in jobs that
+        typically do not require a college degree.</p>
 
-    <input type="text" id="majorSearch" placeholder="Enter a major">
-    <div id="buttons"></div>
-    <div id="swapButton"></div>
-    <svg id='majors' height="800" width="600"
-        style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;">
-    </svg>
-
-
+    <div class="container">
+        <div class="controls">
+            <input type="text" id="majorSearch" placeholder="Enter a major">
+            <div id="buttons"></div>
+            <div id="swapButton"></div>
+        </div>
+        <svg id='majors' height="710" width="700"></svg>
+    </div>
 
     <!-- Scripts -->
     <script>
@@ -94,7 +131,6 @@
             .attr("transform", "translate(" + margin.left + "," + (chartHeight + 2 + margin.top) + ")");
         const chartArea = plot.append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 
         // key
         const key = d3.select('#key')
@@ -129,10 +165,8 @@
                     .text(keyTitles[x])
 
                 x++
-
             }
         }
-
         buildKey();
 
 
@@ -335,8 +369,6 @@
                 positionlist[minPos] = min;
 
                 return positionlist;
-
-
             }
 
 
@@ -424,7 +456,6 @@
 
     <script>
         // MAJOR OUTCOMES, UNEMPLOYMENT & WAGES
-
         const plot2 = d3.select('#majors')
         const width2 = plot2.attr('width')
         const height2 = plot2.attr('height')
@@ -437,11 +468,10 @@
             .attr("transform", "translate(" + margin2.left + "," + (chartHeight2 + 6 + margin2.top) + ")");
         const chartArea2 = plot2.append("g").attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
-        const unemploymentTitle = 'Unemployment // Underemployment Rate By Major'
-        const wagesTitle = "Median Wages Early // Mid-Career By Major"
+        const unemploymentTitle = 'Unemployment & Underemployment Rate'
+        const wagesTitle = "Median Wages Early & Mid-Career"
 
         const requestMajorData = async function () {
-
 
             const majorData = await d3.csv('datasets/majorOutcomes.csv', d3.autotype);
 
@@ -489,7 +519,7 @@
                 .attr('text-anchor', 'middle')
                 .attr('x', chartWidth2 / 2)
                 .attr('dy', 35)
-                .text('Unemployment // Underemployment Rate')
+                .text('Unemployment & Underemployment Rate')
 
             // Y Axis
 
@@ -622,7 +652,7 @@
                         enter => enter.append("circle")
                             .attr("class", major)
                             .attr("fill", color)
-                            .attr("r", 4)
+                            .attr("r", 3.5)
                             .attr("cx", 0)
                             .attr("cy", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
                             .call(enter => enter.transition().duration(300)
@@ -637,7 +667,7 @@
                 circles.on("mouseover", function (event, d) {
                     d3.select(this)
                         .attr("r", 6)
-                        .attr("fill", "black");
+                        .attr("fill", "orange");
 
                     if (onWageView) {
                         tooltip.style("visibility", "visible")
@@ -651,11 +681,11 @@
                 })
                     .on("mousemove", function (event) {
                         tooltip.style("left", (event.pageX + 10) + "px")
-                            .style("top", (event.pageY - 20) + "px");
+                            .style("top", (event.pageY - 10) + "px");
                     })
                     .on("mouseout", function () {
                         d3.select(this)
-                            .attr("r", 4)
+                            .attr("r", 3.5)
                             .attr("fill", color);
                         tooltip.style("visibility", "hidden");
                     });
@@ -693,7 +723,7 @@
 
                         if (index == -1) {
                             tickText = d3.select(this).select('text')
-                            tickText.attr('fill', 'red')
+                            tickText.attr('fill', '#007BFF')
                         }
 
                     })
@@ -712,12 +742,12 @@
                         if (index == -1) {
                             // add to selection
                             tickText = d3.select(this).select('text')
-                            tickText.attr('fill', 'chocolate')
+                            tickText.attr('fill', '#007BFF')
                             selection.push(d)
                         } else {
                             //remove from selection
                             tickText = d3.select(this).select('text')
-                            tickText.attr('fill', 'red')
+                            tickText.attr('fill', '#007BFF')
                             selection.splice(index, 1)
 
                             updateChart(selectedCategory)
@@ -758,7 +788,7 @@
                 updateCirclesbyView();
 
                 swapContainer.selectAll('button')
-                    .text(d => (onWageView) ? "SWAP TO EMPLOYMENT RATES VIEW" : "SWAP TO WAGES VIEW")
+                    .text(d => (onWageView) ? "SWAP TO EMPLOYMENT RATES" : "SWAP TO WAGES")
 
                 xlabel
                     .text(d => (onWageView) ? "Median Wages Early & Mid-Career" : 'Unemployment & Underemployment Rate')
@@ -793,11 +823,11 @@
                         let index = selection.indexOf(d);
                         if (index === -1) {
                             selection.push(d);
-                            d3.select(this).select('text').attr('fill', 'chocolate');
+                            d3.select(this).select('text').attr('fill', 'black');
                         } else {
                             selection.splice(index, 1);
                             d3.select(this).select('text').attr('fill', 'red');
-                            updateChart("All"); 
+                            updateChart("All");
                         }
                     });
 
