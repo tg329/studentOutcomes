@@ -74,7 +74,7 @@
         }
 
         svg {
-            background: rgb(224, 224, 224);
+            background: rgb(230, 230, 230);
             border-radius: 5px;
         }
 
@@ -625,7 +625,7 @@
                     .data(filtered)
                     .join(
                         enter => enter.append("line")
-                            .attr("stroke", "gray")
+                            .attr("stroke", "silver")
                             .attr("stroke-width", 4)
                             .attr("x1", 0)
                             .attr("y1", d => majorScale(d["Major"]) + majorScale.bandwidth() / 2)
@@ -664,7 +664,7 @@
                     })
                     .on("mouseout", function () {
                         d3.select(this)
-                            .attr("stroke", "gray")
+                            .attr("stroke", "silver")
                             .attr("stroke-width", 4);
                         tooltip.style("visibility", "hidden");
                     });
