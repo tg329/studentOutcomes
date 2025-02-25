@@ -68,13 +68,34 @@
             padding: 10px;
             font-size: 16px;
             border-radius: 6px;
-            width: 250px;
+            width: 400px;
             margin-bottom: 10px;
+            margin-top:20px;
         }
 
         svg {
             background: rgb(224, 224, 224);
             border-radius: 5px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #majors {
+            margin-left: 90px;
+        }
+
+        .controls {
+            width: 600px;
+            margin-left: 10px;
+            margin-top: 20px;
+        }
+
+        #swapButton {
+            margin-top:30px;
+            color: white;
         }
     </style>
 </head>
@@ -90,7 +111,7 @@
             Federal Reserve</a>.</p>
 
     <h3>Unemployment Rates Over the Years</h3>
-    <div class="container">
+    <div>
         <svg id='unemployment' height="300" width="650"
             style="background: rgb(224, 224, 224); margin-top:5px; margin-left: 50px;">
         </svg>
@@ -100,20 +121,23 @@
     </div>
 
     <h3>Major Outcomes</h3>
-
-    <p> How do different majors fare in terms of unemployment and wages?
-        Recent graduates have a higher employment rate, but do these graduates require their degree for their work?
-    </p>
-    <p><strong>*Underemployment Rate</strong> is defined by the NYFR as the share of graduates working in jobs that
-        typically do not require a college degree.</p>
-
     <div class="container">
+        <svg id='majors' height="700" width="700"></svg>
         <div class="controls">
+
+            <p> How do different majors fare in terms of unemployment and wages?
+                Recent graduates have a higher employment rate, but do these graduates require their degree for their
+                work?
+            </p>
+            <p>Underemployment Rate is defined by the NYFR as the share of graduates working in jobs
+                that
+                typically do not require a college degree.</p>
+
+            <p><strong>*Filter through selection from the y-axis and/or the search bar</strong></p>
             <input type="text" id="majorSearch" placeholder="Enter a major">
             <div id="buttons"></div>
             <div id="swapButton"></div>
         </div>
-        <svg id='majors' height="710" width="700"></svg>
     </div>
 
     <!-- Scripts -->
@@ -459,7 +483,7 @@
         const plot2 = d3.select('#majors')
         const width2 = plot2.attr('width')
         const height2 = plot2.attr('height')
-        const margin2 = { top: 60, right: 40, bottom: 60, left: 200 };
+        const margin2 = { top: 50, right: 40, bottom: 50, left: 200 };
         const chartWidth2 = width2 - margin2.left - margin2.right;
         const chartHeight2 = height2 - margin2.top - margin2.bottom;
         const yAxisArea2 = plot2.append("g")
@@ -574,7 +598,7 @@
                 .data([onWageView])
                 .enter()
                 .append('button')
-                .text(d => (onWageView) ? "SWAP TO EMPLOYMENT RATES VIEW" : "SWAP TO WAGES VIEW")
+                .text(d => (onWageView) ? "Swap to Employment Rates" : "Swap to Wage Rates")
                 .on('click', function (event, category) {
                     onWageView = !onWageView
                     swapChart();
@@ -788,7 +812,7 @@
                 updateCirclesbyView();
 
                 swapContainer.selectAll('button')
-                    .text(d => (onWageView) ? "SWAP TO EMPLOYMENT RATES" : "SWAP TO WAGES")
+                    .text(d => (onWageView) ? "Swap to Employment Rates" : "Swap to Wage Rates")
 
                 xlabel
                     .text(d => (onWageView) ? "Median Wages Early & Mid-Career" : 'Unemployment & Underemployment Rate')
