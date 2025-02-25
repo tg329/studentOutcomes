@@ -159,9 +159,9 @@
         const kWidth = key.attr('width')
         const kHeight = key.attr('height')
 
-        const ywColor = 'red'
-        const awColor = 'blue'
-        const rgColor = 'green'
+        const ywColor = 'black'
+        const awColor = 'red'
+        const rgColor = 'blue'
 
         const keyTitles = ['Recent graduates (Ages 22-27)', 'All Workers (Ages 16-65)', 'Young Workers (22-27, no Degree)']
         const keyColors = [rgColor, awColor, ywColor]
@@ -258,7 +258,7 @@
                 .data([unemployed])
                 .enter().append("path")
                 .attr('stroke-width', 1)
-                .attr('stroke', 'red')
+                .attr('stroke', ywColor)
                 .attr('fill', 'none')
                 .attr('d', d3.line()
                     .x(d => dateScale(parseTime(d['Date'])))
@@ -269,7 +269,7 @@
                 .data([unemployed])
                 .enter().append("path")
                 .attr('stroke-width', 1)
-                .attr('stroke', 'blue')
+                .attr('stroke', awColor)
                 .attr('fill', 'none')
                 .attr('d', d3.line()
                     .x(d => dateScale(parseTime(d['Date'])))
@@ -280,7 +280,7 @@
                 .data([unemployed])
                 .enter().append("path")
                 .attr('stroke-width', 1)
-                .attr('stroke', 'green')
+                .attr('stroke', rgColor)
                 .attr('fill', 'none')
                 .attr('d', d3.line()
                     .x(d => dateScale(parseTime(d['Date'])))
