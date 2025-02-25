@@ -843,9 +843,30 @@
 
                 yAxis.transition().duration(300).call(d3.axisLeft(majorScale));
 
+                yAxis.selectAll('.tick')
+                    .on('mouseover', function (event, d) {
+                        if (!selection.includes(d)) d3.select(this).select('text').attr('fill', '#007BFF');
+                    })
+                    .on('mouseout', function (event, d) {
+                        if (!selection.includes(d)) d3.select(this).select('text').attr('fill', 'black');
+                    })
+                    .on('click', function (event, d) {
+                        let index = selection.indexOf(d);
+                        if (index === -1) {
+                            selection.push(d);
+                            d3.select(this).select('text').attr('fill', '#007BFF');
+                        } else {
+                            selection.splice(index, 1);
+                            d3.select(this).select('text').attr('fill', '#007BFF');
+                            updateChart("All");
+                        }
+                    });
+
                 updateLines(onWageView ? wageScale : rateScale, onWageView ? "Median Wage Mid-Career" : "Underemployment Rate");
                 updateCirclesbyView();
             });
+
+
 
         };
 
