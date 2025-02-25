@@ -112,11 +112,9 @@
 
     <h3>Unemployment Rates Over the Years</h3>
     <div>
-        <svg id='unemployment' height="300" width="650"
-            style=" margin-top:5px; margin-left: 50px;">
+        <svg id='unemployment' height="300" width="650" style=" margin-top:5px; margin-left: 50px;">
         </svg>
-        <svg id='key' height="100" width="350"
-            style=" margin-top:5px; margin-left: 10px;">
+        <svg id='key' height="100" width="350" style=" margin-top:5px; margin-left: 10px;">
         </svg>
     </div>
 
@@ -735,7 +733,9 @@
             }
 
             function updateChart(selectedCategory) {
-                filtered = majorData.filter(d => (majorCategories[selectedCategory].includes(d["Major"]) || selection.includes(d['Major'])));
+                filtered = majorData
+                    .filter(d => majorCategories[selectedCategory].includes(d["Major"]) || selection.includes(d["Major"]))
+                    .sort((a, b) => a["Major"].localeCompare(b["Major"]));
 
                 majorScale.domain(filtered.map(d => d["Major"]));
 
